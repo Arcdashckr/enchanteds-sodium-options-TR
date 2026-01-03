@@ -108,19 +108,25 @@ public class VideoOptionsScreen extends Screen {
 
     public AbstractWidget buildOptionWidget(Option option) {
         final AbstractWidget widget;
-        if(option instanceof BooleanOption booleanOption) {
-            widget = new OnOffWidget(0, 0, booleanOption);
-        } else if(option instanceof IntegerOption integerOption) {
-            widget = new IntegerSliderWidget(0, 0, integerOption);
-        } else if(option instanceof ExternalButtonOption externalButtonOption) {
-            widget = Button.builder(option.getName(), button -> {
-                externalButtonOption.getCurrentScreenConsumer().accept(this);
-            }).width(Button.DEFAULT_WIDTH).build();
-        } else if(option instanceof EnumOption<?> enumOption) {
-            widget = new EnumCyclerWidget<>(0, 0, enumOption);
-        } else {
-            Logging.warn("Unknown option type. Class: {}, Name: {}", option.getClass().getCanonicalName(), option.getName());
-            return Button.builder(option.getName(), button -> {}).width(Button.DEFAULT_WIDTH).build();
+        switch (option) {
+            case BooleanOption booleanOption -> {
+                widget = new OnOffWidget(0, 0, booleanOption);
+            }
+            case IntegerOption integerOption -> {
+                widget = new IntegerSliderWidget(0, 0, integerOption);
+            }
+            case ExternalButtonOption externalButtonOption -> {
+                widget = Button.builder(option.getName(), button -> externalButtonOption.getCurrentScreenConsumer().accept(this))
+                    .width(Button.DEFAULT_WIDTH)
+                    .build();
+            }
+            case EnumOption<?> enumOption -> {
+                widget = new EnumCyclerWidget<>(0, 0, enumOption);
+            }
+            default -> {
+                Logging.warn("Unknown option type. Class: {}, Name: {}", option.getClass().getCanonicalName(), option.getName());
+                return Button.builder(option.getName(), button -> {}).width(Button.DEFAULT_WIDTH).build();
+            }
         }
 
         return widget;
