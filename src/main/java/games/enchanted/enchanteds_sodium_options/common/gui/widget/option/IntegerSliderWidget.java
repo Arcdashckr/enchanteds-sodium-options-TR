@@ -1,5 +1,6 @@
 package games.enchanted.enchanteds_sodium_options.common.gui.widget.option;
 
+import games.enchanted.enchanteds_sodium_options.common.ModConstants;
 import games.enchanted.enchanteds_sodium_options.common.gui.widget.extension.AbstractSliderButtonExtension;
 import games.enchanted.enchanteds_sodium_options.common.util.ComponentUtil;
 import net.caffeinemc.mods.sodium.api.config.option.SteppedValidator;
@@ -13,6 +14,8 @@ import net.minecraft.util.Mth;
 import org.jspecify.annotations.Nullable;
 
 public class IntegerSliderWidget extends AbstractSliderButton implements AbstractSliderButtonExtension, OptionWidget<IntegerOption> {
+    private static final Identifier DISABLED_HANDLE_SPRITE = Identifier.fromNamespaceAndPath(ModConstants.MOD_ID, "widget/slider_handle_disabled");
+
     final IntegerOption option;
     int realValue;
     int prevValue;
@@ -84,7 +87,7 @@ public class IntegerSliderWidget extends AbstractSliderButton implements Abstrac
 
     @Override
     public Identifier enchanteds_sodium_options$getDisabledHandleSprite() {
-        return Identifier.withDefaultNamespace("widget/slider");
+        return DISABLED_HANDLE_SPRITE;
     }
 
 
