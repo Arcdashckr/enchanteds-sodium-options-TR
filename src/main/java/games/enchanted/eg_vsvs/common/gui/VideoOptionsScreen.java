@@ -1,17 +1,24 @@
 package games.enchanted.eg_vsvs.common.gui;
 
+import games.enchanted.eg_vsvs.common.Logging;
+import games.enchanted.eg_vsvs.common.gui.widget.option.IntegerSliderWidget;
 import games.enchanted.eg_vsvs.common.gui.widget.scroll.VideoOptionsList;
+import net.caffeinemc.mods.sodium.client.config.ConfigManager;
+import net.caffeinemc.mods.sodium.client.config.structure.*;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 
+import java.util.List;
+import java.util.function.Consumer;
+
 public class VideoOptionsScreen extends Screen {
+    public final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
     final Screen parent;
     VideoOptionsList optionsList;
-
-    public final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
 
     public VideoOptionsScreen(Screen parent, Component title) {
         super(title);
@@ -25,13 +32,71 @@ public class VideoOptionsScreen extends Screen {
         this.layout.visitWidgets(this::addRenderableWidget);
 
         int headerHeight = this.layout.getHeaderHeight();
-        this.optionsList = new VideoOptionsList(0, headerHeight, this.width, this.height - headerHeight - this.layout.getFooterHeight());
+        this.optionsList = new VideoOptionsList(
+            0,
+            headerHeight,
+            this.width,
+            this.height - headerHeight - this.layout.getFooterHeight()
+        );
         this.addRenderableWidget(this.optionsList);
-        for (int i = 0; i < 119; i++) {
-            this.optionsList.addOption(Button.builder(Component.empty(), button -> {}).build());
+
+        List<ModOptions> modOptions = ConfigManager.CONFIG.getModOptions();
+
+        for (ModOptions options : modOptions) {
+            var theme = options.theme();
+
+            this.optionsList.addHeader(Component.literal(options.name()).withColor(theme.themeLighter));
+
+            var pages = options.pages();
+
+            for (Page page : pages) {
+                if(page instanceof ExternalPage(
+                    Component name, Consumer<Screen> currentScreenConsumer
+                )) {
+                    this.optionsList.addBigOption(
+                        Button.builder(name, button -> currentScreenConsumer.accept(this)).build()
+                    );
+                }
+                else if(page instanceof OptionPage optionPage) {
+                    this.optionsList.addHeader(page.name().copy().withColor(theme.theme));
+                    buildPageOptions(optionPage);
+                }
+                else {
+                    Logging.warn("Unknown page type. Class: {}, Name: {}", page.getClass().getCanonicalName(), page.name().getString());
+                }
+            }
         }
 
         this.repositionElements();
+    }
+
+    public void buildPageOptions(OptionPage page) {
+        var groups = page.groups();
+
+        for(OptionGroup group : groups) {
+            var groupOptions = group.options();
+            for (Option option : groupOptions) {
+                this.optionsList.addOption(buildOptionWidget(option));
+            }
+        }
+    }
+
+    public AbstractWidget buildOptionWidget(Option option) {
+        final AbstractWidget widget;
+        if(option instanceof BooleanOption booleanOption) {
+            widget = Button.builder(option.getName(), button -> {}).width(Button.DEFAULT_WIDTH).build();
+        } else if(option instanceof IntegerOption integerOption) {
+            widget = new IntegerSliderWidget(0, 0, integerOption);
+        } else if(option instanceof ExternalButtonOption externalButtonOption) {
+            widget = Button.builder(option.getName(), button -> {}).width(Button.DEFAULT_WIDTH).build();
+        } else if(option instanceof EnumOption<?> enumOption) {
+            widget = Button.builder(option.getName(), button -> {}).width(Button.DEFAULT_WIDTH).build();
+        } else {
+            Logging.warn("Unknown option type. Class: {}, Name: {}", option.getClass().getCanonicalName(), option.getName());
+            return Button.builder(option.getName(), button -> {}).width(Button.DEFAULT_WIDTH).build();
+        }
+
+        return widget;
     }
 
     @Override
@@ -44,7 +109,12 @@ public class VideoOptionsScreen extends Screen {
         this.layout.arrangeElements();
         if(optionsList != null) {
             int headerHeight = this.layout.getHeaderHeight();
-            this.optionsList.setRectangle(this.width, this.height - headerHeight - this.layout.getFooterHeight(), 0, headerHeight);
+            this.optionsList.setRectangle(
+                this.width,
+                this.height - headerHeight - this.layout.getFooterHeight(),
+                0,
+                headerHeight
+            );
             this.optionsList.repositionElements();
         }
     }

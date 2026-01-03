@@ -1,6 +1,7 @@
 package games.enchanted.eg_vsvs.common.mixin.sodium;
 
 import games.enchanted.eg_vsvs.common.gui.VideoOptionsScreen;
+import games.enchanted.eg_vsvs.common.util.InputUtil;
 import net.caffeinemc.mods.sodium.client.gui.VideoSettingsScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
@@ -27,6 +28,8 @@ public class VideoSettingsScreenMixin extends Screen {
         method = "init"
     )
     private void afterScreenInit(CallbackInfo info) {
-        Minecraft.getInstance().setScreen(new VideoOptionsScreen(prevScreen, title));
+        if(!InputUtil.shouldShowDebugWidgetBound()) {
+            Minecraft.getInstance().setScreen(new VideoOptionsScreen(prevScreen, title));
+        }
     }
 }

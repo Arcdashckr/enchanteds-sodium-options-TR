@@ -401,6 +401,10 @@ public abstract class VerticalScrollContainerWidget<C extends VerticalScrollCont
             return this.getContentY() + (this.getContentHeight() / 2);
         }
 
+        public int getContentXMiddle() {
+            return this.getContentX() + (this.getContentWidth() / 2);
+        }
+
         public int getContentBottom() {
             return this.getContentY() + this.getContentHeight();
         }
