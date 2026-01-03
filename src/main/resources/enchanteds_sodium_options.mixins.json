@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "games.enchanted.enchanteds_sodium_options.common.mixin",
+  "compatibilityLevel": "JAVA_${java_ver}",
+  "mixins": [
+  ],
+  "client": [
+    "AbstractSliderButtonMixin",
+    "sodium.VideoSettingsScreenMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

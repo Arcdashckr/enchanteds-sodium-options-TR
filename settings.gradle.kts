@@ -34,5 +34,5 @@ stonecutter {
     }
 }
 
-rootProject.name = "eg_vsvs"
+rootProject.name = "enchanteds_sodium_options"
 
