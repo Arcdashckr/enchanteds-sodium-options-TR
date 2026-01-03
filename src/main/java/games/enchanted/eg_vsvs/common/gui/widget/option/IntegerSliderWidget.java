@@ -15,6 +15,7 @@ import org.jspecify.annotations.Nullable;
 public class IntegerSliderWidget extends AbstractSliderButton implements AbstractSliderButtonExtension, OptionWidget<IntegerOption> {
     final IntegerOption option;
     int realValue;
+    int prevValue;
 
     @Nullable OnChange onChange = null;
 
@@ -22,6 +23,8 @@ public class IntegerSliderWidget extends AbstractSliderButton implements Abstrac
         super(x, y, Button.DEFAULT_WIDTH, Button.DEFAULT_HEIGHT, option.getName(), 0);
         this.setTooltip(Tooltip.create(ComponentUtil.createOptionTooltip(option)));
         this.option = option;
+        this.realValue = option.getAppliedValue();
+        this.prevValue = this.realValue;
         this.setValue(this.getSliderValue());
         this.updateMessage();
     }
@@ -43,17 +46,13 @@ public class IntegerSliderWidget extends AbstractSliderButton implements Abstrac
 
     @Override
     protected void applyValue() {
+        this.prevValue = this.realValue;
         this.realValue = getOptionValue();
-        this.option.modifyValue(this.realValue);
-    }
-
-    @Override
-    protected void setValue(double value) {
-        super.setValue(value);
-        this.realValue = getOptionValue();
-        this.option.modifyValue(this.realValue);
-        if(this.onChange != null) {
-            this.onChange.changed();
+        if(this.prevValue != this.realValue) {
+            this.option.modifyValue(this.realValue);
+            if(this.onChange != null) {
+                this.onChange.changed();
+            }
         }
         this.updateMessage();
     }
@@ -80,7 +79,7 @@ public class IntegerSliderWidget extends AbstractSliderButton implements Abstrac
     @Override
     public void onRelease(MouseButtonEvent event) {
         super.onRelease(event);
-        this.value = getSliderValue(this.realValue);
+        this.setValue(getSliderValue(this.realValue));
     }
 
     @Override
@@ -96,7 +95,9 @@ public class IntegerSliderWidget extends AbstractSliderButton implements Abstrac
 
     @Override
     public void refreshValue() {
-        this.setValue(getSliderValue(this.option.getAppliedValue()));
+        this.realValue = option.getAppliedValue();
+        this.prevValue = this.realValue;
+        this.setValue(getSliderValue(this.realValue));
     }
 
     @Override

@@ -6,11 +6,15 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.input.InputWithModifiers;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
-import net.minecraft.util.CommonColors;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.ARGB;
 import org.jspecify.annotations.Nullable;
 
 public class OnOffWidget extends Button implements OptionWidget<BooleanOption> {
+    private static final Identifier DISABLED_SPRITE = Identifier.withDefaultNamespace("widget/button_disabled");
+
     final BooleanOption option;
     boolean value;
 
@@ -40,7 +44,11 @@ public class OnOffWidget extends Button implements OptionWidget<BooleanOption> {
 
     @Override
     protected void renderContents(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
-        this.renderDefaultSprite(guiGraphics);
+        if(this.isActive()) {
+            this.renderDefaultSprite(guiGraphics);
+        } else {
+            guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, DISABLED_SPRITE, this.getX(), this.getY(), this.getWidth(), this.getHeight(), ARGB.white(this.alpha));
+        }
         this.renderDefaultLabel(guiGraphics.textRendererForWidget(this, GuiGraphics.HoveredTextEffects.NONE));
     }
 

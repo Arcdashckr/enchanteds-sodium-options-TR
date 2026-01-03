@@ -27,6 +27,10 @@ public class VideoOptionsScreen extends Screen {
     public final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
     final Screen parent;
     VideoOptionsList optionsList;
+    AbstractWidget undoButton;
+    AbstractWidget applyButton;
+    AbstractWidget doneButton;
+
     final ArrayList<OptionWidget<?>> optionWidgets = new ArrayList<>();
 
     public VideoOptionsScreen(Screen parent, Component title) {
@@ -39,13 +43,13 @@ public class VideoOptionsScreen extends Screen {
         this.layout.addTitleHeader(this.title, this.font);
 
         LinearLayout footerLayout = this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
-        footerLayout.addChild(
+        this.undoButton = footerLayout.addChild(
             Button.builder(ComponentUtil.UNDO, button -> this.undoChanges()).width(FOOTER_BUTTON_WIDTH).build()
         );
-        footerLayout.addChild(
+        this.applyButton = footerLayout.addChild(
             Button.builder(ComponentUtil.APPLY, button -> this.saveChanges()).width(FOOTER_BUTTON_WIDTH).build()
         );
-        footerLayout.addChild(
+        this.doneButton = footerLayout.addChild(
             Button.builder(CommonComponents.GUI_DONE, button -> this.onClose()).width(FOOTER_BUTTON_WIDTH).build()
         );
         this.layout.visitWidgets(this::addRenderableWidget);
@@ -87,6 +91,7 @@ public class VideoOptionsScreen extends Screen {
         }
 
         this.visitOptionsAndAddListeners();
+        this.updateFooterButtonState();
         this.repositionElements();
     }
 
@@ -122,16 +127,20 @@ public class VideoOptionsScreen extends Screen {
     }
 
     private void visitOptionsAndAddListeners() {
+        if(!this.optionWidgets.isEmpty()) {
+            throw new IllegalStateException("visitOptionsAndAddListeners was called while optionWidgets list was not empty");
+        }
         this.optionsList.visitChildren(widget -> {
             if(!(widget instanceof OptionWidget<?> optionWidget)) return;
-            optionWidget.onChange(this::refreshOptionWidgetVisuals);
+            optionWidget.onChange(this::optionChanged);
             this.optionWidgets.add(optionWidget);
         });
     }
 
+
     @Override
     public boolean shouldCloseOnEsc() {
-        return !ConfigManager.CONFIG.anyOptionChanged();
+        return !hasPendingChanges();
     }
 
     private void undoChanges() {
@@ -144,13 +153,32 @@ public class VideoOptionsScreen extends Screen {
         refreshOptionWidgetValues();
     }
 
-    private void refreshOptionWidgetValues() {
-        this.optionWidgets.forEach(OptionWidget::refreshValue);
+    private boolean hasPendingChanges() {
+        return ConfigManager.CONFIG.anyOptionChanged();
     }
 
-    private void refreshOptionWidgetVisuals() {
+    private void refreshOptionWidgetValues() {
+        this.optionWidgets.forEach(OptionWidget::refreshValue);
+        this.updateFooterButtonState();
+    }
+
+    private void optionChanged() {
+        updateFooterButtonState();
         this.optionWidgets.forEach(OptionWidget::refreshVisual);
     }
+
+    private void updateFooterButtonState() {
+        if(hasPendingChanges()) {
+            this.undoButton.active = true;
+            this.applyButton.active = true;
+            this.doneButton.active = false;
+        } else {
+            this.undoButton.active = false;
+            this.applyButton.active = false;
+            this.doneButton.active = true;
+        }
+    }
+
 
     @Override
     public void onClose() {
