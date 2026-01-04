@@ -18,8 +18,8 @@
     "main": [
       "${group}.${id}.fabric.FabricEntry"
     ],
-    "modmenu": [
-      "${group}.${id}.fabric.ModMenuIntegration"
+    "sodium:config_api_user": [
+      "${group}.${id}.common.SodiumConfigEntry"
     ]
   },
   ${accesswidener_field}

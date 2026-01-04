@@ -1,5 +1,7 @@
 package games.enchanted.enchanteds_sodium_options.common.gui.widget.scroll;
 
+import games.enchanted.enchanteds_sodium_options.common.config.ConfigOptions;
+import games.enchanted.enchanteds_sodium_options.common.config.option.ConfigOption;
 import net.caffeinemc.mods.sodium.client.gui.ColorTheme;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -11,6 +13,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.CommonColors;
 import org.jspecify.annotations.Nullable;
 
 import java.util.List;
@@ -165,6 +168,7 @@ public class VideoOptionsList extends VerticalScrollContainerWidget<VideoOptions
 
         @Override
         public void renderContent(GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float partialTick) {
+            if(!ConfigOptions.ACCENT_BARS.getValue()) return;
             graphics.fill(
                 this.getContentX() - ACCENT_LEFT_OFFSET - 1,
                 this.accentTop(),
@@ -261,13 +265,15 @@ public class VideoOptionsList extends VerticalScrollContainerWidget<VideoOptions
         private static final Margin HEADER_MARGINS = new Margin(8, 0, 0, 0);
         private static final int LEFT_TEXT_OFFSET = 1;
 
-        final Component title;
         final Font font = Minecraft.getInstance().font;
+        final Component title;
+        final int titleColour;
 
         HeaderEntry(Component header, ModInfo info) {
             super(info);
             setMargins(HEADER_MARGINS);
             this.title = header;
+            this.titleColour = info.theme().theme;
         }
 
         @Override
@@ -279,7 +285,13 @@ public class VideoOptionsList extends VerticalScrollContainerWidget<VideoOptions
         public void renderContent(GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float partialTick) {
             super.renderContent(graphics, mouseX, mouseY, hovered, partialTick);
 
-            graphics.drawString(this.font, this.title, this.getContentX() + LEFT_TEXT_OFFSET, this.getContentY(), -1);
+            graphics.drawString(
+                this.font,
+                this.title,
+                this.getContentX() + LEFT_TEXT_OFFSET,
+                this.getContentY(),
+                ConfigOptions.COLOURED_CATEGORY_TEXT.getValue() ? this.titleColour : CommonColors.LIGHTER_GRAY
+            );
         }
     }
 
@@ -290,6 +302,8 @@ public class VideoOptionsList extends VerticalScrollContainerWidget<VideoOptions
         final Component version;
         final boolean monochromeIcon;
         final int iconColour;
+        final int titleColour;
+        final int versionColour;
 
         ModTitleEntry(Component title, Component version, @Nullable Identifier icon, boolean monochromeIcon, ModInfo info) {
             super(info);
@@ -299,6 +313,8 @@ public class VideoOptionsList extends VerticalScrollContainerWidget<VideoOptions
             this.version = version;
             this.monochromeIcon = monochromeIcon;
             this.iconColour = info.theme().themeLighter;
+            this.titleColour = info.theme().themeLighter;
+            this.versionColour = info.theme().themeDarker;
         }
 
         @Override
@@ -309,11 +325,12 @@ public class VideoOptionsList extends VerticalScrollContainerWidget<VideoOptions
         @Override
         public void renderContent(GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float partialTick) {
             super.renderContent(graphics, mouseX, mouseY, hovered, partialTick);
+            final boolean hasIcon = this.icon != null && ConfigOptions.SHOW_MOD_ICONS.getValue();
 
-            final int iconSize = this.icon == null ? 0 : (int) (this.font.lineHeight * 1.5);
-            final int gap = this.icon == null ? HeaderEntry.LEFT_TEXT_OFFSET : 3;
+            final int iconSize = hasIcon ? (int) (this.font.lineHeight * 1.5) : 0;
+            final int gap = hasIcon ? 3 : HeaderEntry.LEFT_TEXT_OFFSET;
 
-            if(this.icon != null) {
+            if(hasIcon) {
                 graphics.blit(
                     RenderPipelines.GUI_TEXTURED,
                     this.icon,
@@ -331,10 +348,11 @@ public class VideoOptionsList extends VerticalScrollContainerWidget<VideoOptions
                 );
             }
 
-            graphics.drawString(this.font, this.title, this.getContentX() + iconSize + gap, this.getContentY(), -1);
+            final boolean colouredText = ConfigOptions.COLOURED_HEADER_TEXT.getValue();
+            graphics.drawString(this.font, this.title, this.getContentX() + iconSize + gap, this.getContentY(), colouredText ? this.titleColour : -1);
 
-            int versionWidth = this.font.width(this.version);
-            graphics.drawString(this.font, this.version, this.getContentRight() - versionWidth, this.getContentY(), -1);
+            final int versionWidth = this.font.width(this.version);
+            graphics.drawString(this.font, this.version, this.getContentRight() - versionWidth, this.getContentY(), colouredText ? this.versionColour : CommonColors.LIGHT_GRAY);
         }
 
         @Override

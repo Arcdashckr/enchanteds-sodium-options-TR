@@ -68,8 +68,8 @@ public class VideoOptionsScreen extends Screen {
             VideoOptionsList.ModInfo modInfo = new VideoOptionsList.ModInfo(options.configId(), theme);
 
             this.optionsList.addModTitle(
-                Component.literal(options.name()).withColor(theme.themeLighter),
-                Component.literal("v" + options.version()).withColor(theme.themeDarker),
+                Component.literal(options.name()),
+                Component.literal("v" + options.version()),
                 options.icon(),
                 options.iconMonochrome(),
                 modInfo
@@ -87,7 +87,7 @@ public class VideoOptionsScreen extends Screen {
                     );
                 }
                 else if(page instanceof OptionPage optionPage) {
-                    this.optionsList.addHeader(page.name().copy().withColor(theme.theme), modInfo);
+                    this.optionsList.addHeader(page.name(), modInfo);
                     buildPageOptions(optionPage, modInfo);
                 }
                 else {
@@ -104,6 +104,7 @@ public class VideoOptionsScreen extends Screen {
     public void buildPageOptions(OptionPage page, VideoOptionsList.ModInfo modInfo) {
         var groups = page.groups();
 
+        // TODO: display group names
         for(OptionGroup group : groups) {
             var groupOptions = group.options();
             for (Option option : groupOptions) {

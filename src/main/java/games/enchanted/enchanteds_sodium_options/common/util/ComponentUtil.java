@@ -9,6 +9,9 @@ public class ComponentUtil {
     public static final Component APPLY = Component.translatable("sodium.options.buttons.apply");
     public static final Component UNDO = Component.translatable("sodium.options.buttons.undo");
 
+    public static final String OPTION_PREFIX = "gui.enchanted_sodium_options.option.";
+    public static final String OPTION_TOOLTIP_SUFFIX = ".tooltip";
+
     public static Component createOptionTooltip(Option option) {
         if(option.getImpact() == null) return option.getTooltip();
         // TODO: translations
@@ -20,5 +23,12 @@ public class ComponentUtil {
             optionName,
                 value.copy().withStyle(style -> style.withItalic(modified))
             ).withColor(active ? -1 : CommonColors.LIGHT_GRAY);
+    }
+
+    public static Component componentForOption(String optionId) {
+        return componentForOption(optionId, false);
+    }
+    public static Component componentForOption(String optionId, boolean tooltip) {
+        return Component.translatable(OPTION_PREFIX + optionId + (tooltip ? OPTION_TOOLTIP_SUFFIX : ""));
     }
 }
