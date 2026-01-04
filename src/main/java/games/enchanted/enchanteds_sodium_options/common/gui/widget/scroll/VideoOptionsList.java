@@ -9,6 +9,8 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
+import net.minecraft.client.gui.narration.NarratedElementType;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
@@ -153,7 +155,11 @@ public class VideoOptionsList extends VerticalScrollContainerWidget<VideoOptions
         );
     }
 
-    static abstract class Entry extends Child {
+    @Override
+    protected void narrateChildPosition(NarrationElementOutput output, Entry child) {
+    }
+
+    public static abstract class Entry extends Child {
         private static final int ACCENT_LEFT_OFFSET = 4;
         private static final int ACCENT_TOPMOST_OFFSET = 5;
         private static final int ACCENT_BOTTOMMOST_OFFSET = 4;
@@ -204,6 +210,19 @@ public class VideoOptionsList extends VerticalScrollContainerWidget<VideoOptions
         @Override
         public List<? extends GuiEventListener> children() {
             return List.of();
+        }
+
+        @Override
+        void updateNarration(NarrationElementOutput output) {
+            List<? extends NarratableEntry> narratableChildren = this.narratableChildren();
+            Screen.NarratableSearchResult result = Screen.findNarratableWidget(narratableChildren, this.lastNarratable);
+            if (result == null) return;
+
+            if (result.priority().isTerminal()) {
+                this.lastNarratable = result.entry();
+            }
+
+            result.entry().updateNarration(output.nest());
         }
     }
 

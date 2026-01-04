@@ -1,5 +1,6 @@
 package games.enchanted.enchanteds_sodium_options.common.gui.widget.scroll;
 
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import games.enchanted.enchanteds_sodium_options.common.util.InputUtil;
@@ -165,7 +166,7 @@ public abstract class VerticalScrollContainerWidget<C extends VerticalScrollCont
 
     @Override
     public Optional<GuiEventListener> getChildAt(double mouseX, double mouseY) {
-        return Optional.ofNullable(this.getChildAtPosition(mouseX, mouseY));
+        return Optional.<GuiEventListener>ofNullable(this.getChildAtPosition(mouseX, mouseY));
     }
 
     @Override
@@ -332,8 +333,8 @@ public abstract class VerticalScrollContainerWidget<C extends VerticalScrollCont
     }
 
     public static abstract class Child implements ContainerEventHandler {
-        @Nullable private NarratableEntry lastNarratable = null;
-        @Nullable private GuiEventListener focusedElement = null;
+        @Nullable NarratableEntry lastNarratable = null;
+        @Nullable GuiEventListener focusedElement = null;
 
         private Margin margins = new Margin(2, 2);
 
@@ -512,12 +513,11 @@ public abstract class VerticalScrollContainerWidget<C extends VerticalScrollCont
             }
 
             if (narratableChildren.size() > 1) {
-                output.add(NarratedElementType.POSITION, Component.translatable("narrator.position.object_list", result.index/*? if minecraft: >= 1.21.9 {*/()/*?}*/ + 1, narratableChildren.size()));
+                output.add(NarratedElementType.POSITION, Component.translatable("narrator.position.object_list", result.index() + 1, narratableChildren.size()));
             }
 
             result.entry().updateNarration(output.nest());
         }
-
     }
 
     public record Margin(int top, int bottom, int left, int right) {
