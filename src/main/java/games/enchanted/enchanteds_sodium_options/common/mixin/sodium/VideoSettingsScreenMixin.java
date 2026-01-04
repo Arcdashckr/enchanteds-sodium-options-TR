@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(value = VideoSettingsScreen.class, priority = 950)
-public class VideoSettingsScreenMixin extends Screen {
+public abstract class VideoSettingsScreenMixin extends Screen {
     protected VideoSettingsScreenMixin(Component title) {
         super(title);
     }
@@ -24,8 +24,9 @@ public class VideoSettingsScreenMixin extends Screen {
     )
     private static boolean wrapSodiumVideoScreenCtor(SodiumOptions instance, Operation<Boolean> original, Screen currentScreen, @Cancellable CallbackInfoReturnable<Screen> cir) {
         boolean configReadOnly = original.call(instance);
+        if(VideoOptionsScreen.forceSodiumScreen) return configReadOnly;
         if(!configReadOnly) {
-            cir.setReturnValue(new VideoOptionsScreen(currentScreen));
+            cir.setReturnValue(VideoOptionsScreen.create(currentScreen));
             return false;
         }
         return true;

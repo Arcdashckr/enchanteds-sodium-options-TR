@@ -1,5 +1,6 @@
 package games.enchanted.enchanteds_sodium_options.common.gui;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import games.enchanted.enchanteds_sodium_options.common.Logging;
 import games.enchanted.enchanteds_sodium_options.common.gui.widget.option.*;
 import games.enchanted.enchanteds_sodium_options.common.gui.widget.scroll.VideoOptionsList;
@@ -7,14 +8,18 @@ import games.enchanted.enchanteds_sodium_options.common.mixin.accessor.sodium.Op
 import games.enchanted.enchanteds_sodium_options.common.util.ComponentUtil;
 import net.caffeinemc.mods.sodium.client.config.ConfigManager;
 import net.caffeinemc.mods.sodium.client.config.structure.*;
+import net.caffeinemc.mods.sodium.client.gui.VideoSettingsScreen;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Util;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,19 +30,32 @@ public class VideoOptionsScreen extends Screen {
     private static final Component DONATION_BUTTON_TEXT = Component.translatable("sodium.options.buttons.donate");
     private static final int FOOTER_BUTTON_WIDTH = 98;
 
+    public static boolean forceSodiumScreen = false;
+
     public final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
     final Screen parent;
-    VideoOptionsList optionsList;
-    AbstractWidget undoButton;
-    AbstractWidget applyButton;
-    AbstractWidget doneButton;
-    AbstractWidget donateButton;
+    @Nullable VideoOptionsList optionsList;
+    @Nullable AbstractWidget undoButton;
+    @Nullable AbstractWidget applyButton;
+    @Nullable AbstractWidget doneButton;
+    @Nullable AbstractWidget donateButton;
 
     final ArrayList<OptionWidget<?>> optionWidgets = new ArrayList<>();
 
-    public VideoOptionsScreen(Screen parent) {
+    VideoOptionsScreen(Screen parent) {
         super(TITLE);
         this.parent = parent;
+    }
+
+    public static Screen createSodiumScreen(Screen parent) {
+        forceSodiumScreen = true;
+        Screen newScreen = VideoSettingsScreen.createScreen(parent);
+        forceSodiumScreen = false;
+        return newScreen;
+    }
+
+    public static Screen create(Screen parent) {
+        return new VideoOptionsScreen(parent);
     }
 
     @Override
@@ -158,6 +176,7 @@ public class VideoOptionsScreen extends Screen {
         if(!this.optionWidgets.isEmpty()) {
             throw new IllegalStateException("visitOptionsAndAddListeners was called while optionWidgets list was not empty");
         }
+        if(this.optionsList == null) return;
         this.optionsList.visitChildren(widget -> {
             if(!(widget instanceof OptionWidget<?> optionWidget)) return;
             optionWidget.onChange(this::anyOptionChanged);
@@ -196,6 +215,7 @@ public class VideoOptionsScreen extends Screen {
     }
 
     private void updateFooterButtonState() {
+        if(this.undoButton == null || this.applyButton == null || this.doneButton == null) return;
         if(hasPendingChanges()) {
             this.undoButton.active = true;
             this.applyButton.active = true;
@@ -207,6 +227,14 @@ public class VideoOptionsScreen extends Screen {
         }
     }
 
+    @Override
+    public boolean keyPressed(KeyEvent event) {
+        if(event.hasAltDown() && event.key() == InputConstants.KEY_P) {
+            Minecraft.getInstance().setScreen(createSodiumScreen(this.parent));
+            return true;
+        }
+        return super.keyPressed(event);
+    }
 
     @Override
     public void onClose() {
@@ -217,10 +245,13 @@ public class VideoOptionsScreen extends Screen {
     protected void repositionElements() {
         this.layout.arrangeElements();
         int headerHeight = this.layout.getHeaderHeight();
-        this.donateButton.setPosition(
-            this.width - this.donateButton.getWidth() - 8,
-            (headerHeight / 2) - this.donateButton.getHeight() / 2
-        );
+
+        if(this.donateButton != null) {
+            this.donateButton.setPosition(
+                this.width - this.donateButton.getWidth() - 8,
+                (headerHeight / 2) - this.donateButton.getHeight() / 2
+            );
+        }
 
         if(optionsList != null) {
             this.optionsList.setRectangle(
