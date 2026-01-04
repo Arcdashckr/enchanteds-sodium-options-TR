@@ -38,8 +38,8 @@ public class VideoOptionsList extends VerticalScrollContainerWidget<VideoOptions
 
 
     public WidgetPosition addOption(AbstractWidget child, ModInfo modInfo) {
-        if(this.lastEntry != null && this.lastEntry instanceof OptionEntry optionEntry) {
-            optionEntry.setSecondChild(child);
+        if(this.lastEntry != null) {
+            this.lastEntry.setSecondChild(child);
             this.lastEntry = null;
             return new WidgetPosition(this.children().size() - 1, true);
         }
@@ -186,6 +186,21 @@ public class VideoOptionsList extends VerticalScrollContainerWidget<VideoOptions
         protected int height() {
             return DEFAULT_CHILD_HEIGHT;
         }
+
+        @Override
+        public List<? extends AbstractWidget> widgetChildren() {
+            return List.of();
+        }
+
+        @Override
+        public List<? extends NarratableEntry> narratableChildren() {
+            return List.of();
+        }
+
+        @Override
+        public List<? extends GuiEventListener> children() {
+            return List.of();
+        }
     }
 
     static class OptionEntry extends Entry {
@@ -244,6 +259,7 @@ public class VideoOptionsList extends VerticalScrollContainerWidget<VideoOptions
 
     static class HeaderEntry extends Entry {
         private static final Margin HEADER_MARGINS = new Margin(8, 0, 0, 0);
+        private static final int LEFT_TEXT_OFFSET = 1;
 
         final Component title;
         final Font font = Minecraft.getInstance().font;
@@ -263,22 +279,7 @@ public class VideoOptionsList extends VerticalScrollContainerWidget<VideoOptions
         public void renderContent(GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float partialTick) {
             super.renderContent(graphics, mouseX, mouseY, hovered, partialTick);
 
-            graphics.drawString(this.font, this.title, this.getContentX(), this.getContentY(), -1);
-        }
-
-        @Override
-        public List<? extends AbstractWidget> widgetChildren() {
-            return List.of();
-        }
-
-        @Override
-        public List<? extends NarratableEntry> narratableChildren() {
-            return List.of();
-        }
-
-        @Override
-        public List<? extends GuiEventListener> children() {
-            return List.of();
+            graphics.drawString(this.font, this.title, this.getContentX() + LEFT_TEXT_OFFSET, this.getContentY(), -1);
         }
     }
 
@@ -310,7 +311,7 @@ public class VideoOptionsList extends VerticalScrollContainerWidget<VideoOptions
             super.renderContent(graphics, mouseX, mouseY, hovered, partialTick);
 
             final int iconSize = this.icon == null ? 0 : (int) (this.font.lineHeight * 1.5);
-            final int gap = 3;
+            final int gap = this.icon == null ? HeaderEntry.LEFT_TEXT_OFFSET : 3;
 
             if(this.icon != null) {
                 graphics.blit(
@@ -339,21 +340,6 @@ public class VideoOptionsList extends VerticalScrollContainerWidget<VideoOptions
         @Override
         protected int accentTop() {
             return super.accentTop() + Entry.ACCENT_TOPMOST_OFFSET;
-        }
-
-        @Override
-        public List<? extends AbstractWidget> widgetChildren() {
-            return List.of();
-        }
-
-        @Override
-        public List<? extends NarratableEntry> narratableChildren() {
-            return List.of();
-        }
-
-        @Override
-        public List<? extends GuiEventListener> children() {
-            return List.of();
         }
     }
 
