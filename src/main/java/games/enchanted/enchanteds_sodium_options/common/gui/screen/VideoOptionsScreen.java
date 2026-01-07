@@ -116,7 +116,12 @@ public class VideoOptionsScreen extends Screen {
 
         for (ModOptions options : modOptions) {
             var theme = options.theme();
-            VideoOptionsList.ModInfo modInfo = new VideoOptionsList.ModInfo(options.configId(), theme);
+            VideoOptionsList.ModInfo modInfo = new VideoOptionsList.ModInfo(
+                options.configId(),
+                Component.literal(options.name()),
+                theme,
+                VideoOptionsList.IconInfo.create(options.icon(), options.iconMonochrome())
+            );
 
             this.optionsList.addModTitle(
                 Component.literal(options.name()),

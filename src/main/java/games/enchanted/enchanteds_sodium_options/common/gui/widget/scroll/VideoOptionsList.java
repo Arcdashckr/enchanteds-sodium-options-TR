@@ -16,7 +16,9 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.util.CommonColors;
 import org.jspecify.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 public class VideoOptionsList extends VerticalScrollContainerWidget<VideoOptionsList.Entry> {
@@ -28,6 +30,7 @@ public class VideoOptionsList extends VerticalScrollContainerWidget<VideoOptions
     public static final int DEFAULT_CHILD_WIDTH = 150;
     public static final int ROW_WIDTH = 310;
 
+    private final ArrayList<ModTitlePosition> modCategoryTitlePositions = new ArrayList<>();
     @Nullable private OptionEntry lastEntry = null;
 
     public VideoOptionsList(int x, int y, int width, int height) {
@@ -61,6 +64,7 @@ public class VideoOptionsList extends VerticalScrollContainerWidget<VideoOptions
     }
 
     public void addModTitle(Component name, Component version, @Nullable Identifier icon, boolean monochromeIcon, ModInfo modInfo) {
+        this.modCategoryTitlePositions.add(new ModTitlePosition(modInfo, this.children().size()));
         trySetLastInCategoryOnBottomEntry(modInfo);
         this.lastEntry = null;
         this.addChild(new ModTitleEntry(name, version, icon, monochromeIcon, modInfo));
@@ -157,6 +161,47 @@ public class VideoOptionsList extends VerticalScrollContainerWidget<VideoOptions
             separatorTextureWidth,
             separatorHeight
         );
+
+        renderScrollbarIcons(guiGraphics, mouseX, mouseY, partialTick);
+    }
+
+    protected void renderScrollbarIcons(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        // TODO: implement this properly
+//        if(this.modCategoryTitlePositions.isEmpty()) return;
+//
+//        final Font font = Minecraft.getInstance().font;
+//        final int totalChildren = this.children().size();
+//        final int size = this.modCategoryTitlePositions.size();
+//        final int height = this.getHeight();
+//        final float percentMouseY = (((float) mouseY - getY()) / height);
+//
+//        for (int i = 0; i < size; i++) {
+//            final boolean isLast = i == size - 1;
+//            ModTitlePosition position = this.modCategoryTitlePositions.get(i);
+//            ModTitlePosition nextPosition = this.modCategoryTitlePositions.get(Math.min(i + 1, size - 1));
+//            final float percentSize = (float) position.index() / totalChildren;
+//            final float nextPercentSize = isLast ? 1f : (float) nextPosition.index() / totalChildren;
+//
+//            final boolean isHovered = percentSize <= percentMouseY && percentMouseY <= nextPercentSize;
+//            if(!isHovered) continue;
+//
+//            int y = (int) ((percentSize * height) + this.getY());
+//            ModInfo info = position.info();
+//            graphics.fill(
+//                this.scrollBarX() + 6,
+//                y,
+//                this.scrollBarX() + 7,
+//                (int) ((nextPercentSize * height) + this.getY()),
+//                info.theme().theme
+//            );
+//            graphics.drawString(
+//                font,
+//                info.name(),
+//                this.scrollBarX() + 8,
+//                y,
+//                -1
+//            );
+//        }
     }
 
     @Override
@@ -284,72 +329,6 @@ public class VideoOptionsList extends VerticalScrollContainerWidget<VideoOptions
         }
     }
 
-    static class CategoryHeaderEntry extends Entry {
-        private static final int LEFT_TEXT_OFFSET = 1;
-
-        final Font font = Minecraft.getInstance().font;
-        final Component title;
-        final int textColour;
-
-        CategoryHeaderEntry(Component header, ModInfo info) {
-            this(header, info, info.theme().theme);
-        }
-
-        CategoryHeaderEntry(Component header, ModInfo info, int textColour) {
-            super(info);
-            setMargins(new Margin(5, 0, LEFT_TEXT_OFFSET, 0));
-            this.title = header;
-            this.textColour = textColour;
-        }
-
-        protected int getTextColour() {
-            return ConfigOptions.COLOURED_CATEGORY_TEXT.getValue() ? this.textColour : CommonColors.TEXT_GRAY;
-        }
-
-        @Override
-        protected int height() {
-            return this.font.lineHeight;
-        }
-
-        @Override
-        public void renderContent(GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float partialTick) {
-            super.renderContent(graphics, mouseX, mouseY, hovered, partialTick);
-
-            graphics.drawString(
-                this.font,
-                this.title,
-                this.getContentX(),
-                this.getContentY(),
-                this.getTextColour()
-            );
-        }
-    }
-
-    static class GroupTitleEntry extends CategoryHeaderEntry {
-        GroupTitleEntry(Component header, ModInfo info) {
-            super(header, info, CommonColors.TEXT_GRAY);
-            setMargins(new Margin(4, 0, 14, 0));
-        }
-
-        @Override
-        public void renderContent(GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float partialTick) {
-            super.renderContent(graphics, mouseX, mouseY, hovered, partialTick);
-
-            graphics.drawString(
-                this.font,
-                "-",
-                this.getContentX() - this.font.width("- "),
-                this.getContentY(),
-                this.getTextColour()
-            );
-        }
-
-        @Override
-        protected int getTextColour() {
-            return CommonColors.LIGHTER_GRAY;
-        }
-    }
-
     static class ModTitleEntry extends Entry {
         final Component title;
         final Font font = Minecraft.getInstance().font;
@@ -362,7 +341,7 @@ public class VideoOptionsList extends VerticalScrollContainerWidget<VideoOptions
 
         ModTitleEntry(Component title, Component version, @Nullable Identifier icon, boolean monochromeIcon, ModInfo info) {
             super(info);
-            setMargins(new Margin(8, 0, CategoryHeaderEntry.LEFT_TEXT_OFFSET, 0));
+            setMargins(new Margin(8, 4, CategoryHeaderEntry.LEFT_TEXT_OFFSET, 0));
             this.title = title;
             this.icon = icon;
             this.version = version;
@@ -416,9 +395,85 @@ public class VideoOptionsList extends VerticalScrollContainerWidget<VideoOptions
         }
     }
 
+    static class CategoryHeaderEntry extends Entry {
+        private static final int LEFT_TEXT_OFFSET = 1;
+
+        final Font font = Minecraft.getInstance().font;
+        final Component title;
+        final int textColour;
+
+        CategoryHeaderEntry(Component header, ModInfo info) {
+            this(header, info, info.theme().theme);
+        }
+
+        CategoryHeaderEntry(Component header, ModInfo info, int textColour) {
+            super(info);
+            setMargins(new Margin(1, 0, LEFT_TEXT_OFFSET, 0));
+            this.title = header;
+            this.textColour = textColour;
+        }
+
+        protected int getTextColour() {
+            return ConfigOptions.COLOURED_CATEGORY_TEXT.getValue() ? this.textColour : CommonColors.TEXT_GRAY;
+        }
+
+        @Override
+        protected int height() {
+            return this.font.lineHeight;
+        }
+
+        @Override
+        public void renderContent(GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float partialTick) {
+            super.renderContent(graphics, mouseX, mouseY, hovered, partialTick);
+
+            graphics.drawString(
+                this.font,
+                this.title,
+                this.getContentX(),
+                this.getContentY(),
+                this.getTextColour()
+            );
+        }
+    }
+
+    static class GroupTitleEntry extends CategoryHeaderEntry {
+        GroupTitleEntry(Component header, ModInfo info) {
+            super(header, info, CommonColors.TEXT_GRAY);
+            setMargins(new Margin(4, 0, 14, 0));
+        }
+
+        @Override
+        public void renderContent(GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float partialTick) {
+            super.renderContent(graphics, mouseX, mouseY, hovered, partialTick);
+
+            graphics.drawString(
+                this.font,
+                "-",
+                this.getContentX() - this.font.width("- "),
+                this.getContentY(),
+                this.getTextColour()
+            );
+        }
+
+        @Override
+        protected int getTextColour() {
+            return CommonColors.LIGHTER_GRAY;
+        }
+    }
+
     public record WidgetPosition(int entryIndex, boolean secondary) {
     }
 
-    public record ModInfo(String id, ColorTheme theme) {
+    public record ModInfo(String id, Component name, ColorTheme theme, @Nullable IconInfo iconInfo) {
+    }
+
+    public record IconInfo(Identifier icon, boolean monochrome) {
+        public static @Nullable IconInfo create(@Nullable Identifier icon, boolean monochrome) {
+            if(icon == null) return null;
+            return new IconInfo(icon, monochrome);
+        }
+    }
+
+    private record ModTitlePosition(ModInfo info, int index) {
     }
 }
