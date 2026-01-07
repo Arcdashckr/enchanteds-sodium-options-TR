@@ -1,6 +1,7 @@
 package games.enchanted.enchanteds_sodium_options.common.util;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import games.enchanted.enchanteds_sodium_options.common.PlatformHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.input.KeyEvent;
 
@@ -14,6 +15,7 @@ public class InputUtil {
     }
 
     public static boolean shouldShowDebugWidgetBound() {
+        if(!PlatformHelper.isDevelopmentEnvironment()) return false;
         return InputConstants.isKeyDown(Minecraft.getInstance().getWindow(), InputConstants.KEY_RSHIFT);
     }
 }

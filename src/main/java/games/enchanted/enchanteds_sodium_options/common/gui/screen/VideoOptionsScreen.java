@@ -175,8 +175,7 @@ public class VideoOptionsScreen extends Screen {
 
         if(!collapsedOptionPages.isEmpty()) {
             if(!allPagesCollapsed) {
-                // TODO: translation
-                this.optionsList.addCategoryHeader(Component.literal("More"), modInfo);
+                this.optionsList.addCategoryHeader(Component.translatable("gui.enchanted_sodium_options.group.more"), modInfo);
             }
 
             for (OptionPage page : collapsedOptionPages) {

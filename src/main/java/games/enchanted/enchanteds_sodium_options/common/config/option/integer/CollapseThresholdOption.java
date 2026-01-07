@@ -11,8 +11,7 @@ public class CollapseThresholdOption extends IntOption {
 
     @Override
     protected Component formatValue(int value) {
-        // TODO: translation
-        if(value <= 0) return Component.literal("Collapse All");
+        if(value <= 0) return Component.translatable("gui.enchanted_sodium_options.option.collapse_threshold.value.collapse_all");
         return super.formatValue(value);
     }
 }
